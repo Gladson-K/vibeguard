@@ -1,0 +1,21 @@
+# Machine profiles: rotation speed + bearing defect frequencies (Hz).
+# bpfo/bpfi/bsf/ftf can be computed from bearing geometry (see V4 order tracking).
+machines:
+  fan_25hz:
+    rpm: 1500
+    bpfo_hz: 87
+    bpfi_hz: 142
+    bsf_hz: 55
+    ftf_hz: 11
+  pump_50hz:
+    rpm: 3000
+    bpfo_hz: 174
+    bpfi_hz: 284
+    bsf_hz: 110
+    ftf_hz: 22
+  bench_motor:
+    rpm: 1200
+    bpfo_hz: 70
+    bpfi_hz: 114
+    bsf_hz: 44
+    ftf_hz: 9
