@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VibeGuard</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;padding:16px;background:#111;color:#eee}
+.card{background:#1c1c1c;border-radius:10px;padding:14px;margin-bottom:14px}
+.s{display:inline-block;padding:4px 12px;border-radius:12px;font-weight:600}
+.learning{background:#555}.ok{background:#1f7a3a}.warning{background:#b8860b}.anomaly{background:#b3261e}
+canvas{width:100%;height:160px;background:#151515;border-radius:6px}
+select,button{padding:6px 10px;border-radius:6px;border:0}
+</style></head><body>
+<h2>VibeGuard</h2>
+<div class="card"><select id="dev"></select> <span id="st" class="s">-</span> <span id="info"></span>
+<button onclick="reset()">Relearn baseline</button></div>
+<div class="card"><b>RMS (g)</b><canvas id="c1"></canvas></div>
+<div class="card"><b>Anomaly score (z)</b><canvas id="c2"></canvas></div>
+<div class="card"><b>Kurtosis</b><canvas id="c3"></canvas></div>
+<script>
+const $=id=>document.getElementById(id);
+function draw(cv,vals,color){const c=$(cv),x=c.getContext('2d');c.width=c.clientWidth;c.height=c.clientHeight;
+x.clearRect(0,0,c.width,c.height);if(!vals.length)return;const mx=Math.max(...vals,1e-6),mn=Math.min(...vals,0);
+x.strokeStyle=color;x.beginPath();vals.forEach((v,i)=>{const px=i/(vals.length-1||1)*c.width,py=c.height-(v-mn)/(mx-mn||1)*(c.height-8)-4;i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke()}
+async function devs(){const d=await (await fetch('/api/devices')).json();const s=$('dev'),cur=s.value;
+s.innerHTML=d.map(x=>`<option>${x.device_id}</option>`).join('');if(cur)s.value=cur}
+async function tick(){if(!$('dev').value){await devs();return}
+const h=await (await fetch('/api/history/'+$('dev').value)).json();if(!h.length)return;const l=h[h.length-1];
+$('st').textContent=l.status.toUpperCase();$('st').className='s '+l.status;$('info').textContent=` score ${l.score} | ${l.dom_freq.toFixed(0)} Hz`;
+draw('c1',h.map(r=>r.rms),'#4fc3f7');draw('c2',h.map(r=>r.score),'#ff7043');draw('c3',h.map(r=>r.kurtosis),'#aed581')}
+async function reset(){await fetch('/api/reset/'+$('dev').value,{method:'POST'})}
+setInterval(tick,1000);devs();
+</script></body></html>
