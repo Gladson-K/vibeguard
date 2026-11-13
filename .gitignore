@@ -25,3 +25,6 @@ models/out/
 # Docker / misc
 *.log
 .DS_Store
+
+# Generated model artifacts
+models/

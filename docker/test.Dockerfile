@@ -14,6 +14,9 @@ RUN pip install --no-cache-dir -r /tmp/gateway-requirements.txt -r /tmp/requirem
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x docker/*.sh && bash docker/build_sil.sh
+# NAS-select the best autoencoder, export int8 TinyML weights, then build SIL nodes.
+RUN chmod +x docker/*.sh \
+    && python -m tools.train_autoencoder --quick --out /app/models/tinyml \
+    && bash docker/build_sil.sh
 
 CMD ["pytest", "-q"]
