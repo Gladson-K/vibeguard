@@ -23,9 +23,11 @@ logs:
 	$(COMPOSE) logs -f gateway
 
 test-v1: $(REPORT_DIR)
+	-$(COMPOSE) --profile v1 down -v --remove-orphans
 	$(COMPOSE) --profile v1 up --build --abort-on-container-exit --exit-code-from test-v1 test-v1
 
 test-v2: $(REPORT_DIR)
+	-$(COMPOSE) --profile v2 down -v --remove-orphans
 	$(COMPOSE) --profile v2 up --build --abort-on-container-exit --exit-code-from test-v2 test-v2
 
 test-ml:
