@@ -1,0 +1,24 @@
+# Sensor hardware profiles. Add a sensor here to make it usable by the whole
+# harness/tests without changing test code.
+sensors:
+  mpu6050:
+    transport: i2c
+    fs: 1000
+    window: 512
+    range_g: 8
+    noise_g: 0.010
+    version: v1
+  adxl345:
+    transport: spi
+    fs: 3200
+    window: 2048
+    range_g: 16
+    noise_g: 0.003
+    version: v2
+  adxl355:
+    transport: spi
+    fs: 3200
+    window: 2048
+    range_g: 8
+    noise_g: 0.0006
+    version: v2

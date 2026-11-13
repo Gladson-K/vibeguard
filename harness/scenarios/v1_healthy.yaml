@@ -1,0 +1,13 @@
+name: v1_healthy
+version: v1
+device_id: sim-v1-healthy
+sensor: mpu6050
+machine: fan_25hz
+seed: 1
+baseline_windows: 60
+fault_after: null
+total_windows: 360
+fault: null
+expect:
+  max_false_alarms: 0
+  max_latency_ms: 1000

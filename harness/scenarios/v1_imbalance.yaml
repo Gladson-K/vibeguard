@@ -1,0 +1,17 @@
+name: v1_imbalance
+version: v1
+device_id: sim-v1-imbalance
+sensor: mpu6050
+machine: bench_motor
+seed: 4
+baseline_windows: 60
+fault_after: 120
+total_windows: 400
+fault:
+  type: imbalance
+  amplitude: 0.35
+expect:
+  min_recall: 0.9
+  max_false_alarms: 0
+  max_detection_delay: 20
+  max_latency_ms: 1000

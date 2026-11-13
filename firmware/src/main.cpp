@@ -5,7 +5,7 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "config.h"
-#include "features.h"
+#include "vg_features_v1.h"
 
 #define MPU_ADDR 0x68
 static float buf[WINDOW_N], im[WINDOW_N];

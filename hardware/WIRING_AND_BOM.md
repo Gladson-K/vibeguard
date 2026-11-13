@@ -27,5 +27,18 @@ Rigid mount on the motor bearing housing, closest to the load. Loose mounting ki
 3. Confirm status turns ANOMALY within a few windows. Note rms, crest, kurtosis shifts.
 4. Log results in a table: fault type, detection delay, score peak.
 
+## V2 sensing upgrade (ADXL345 / ADXL355 over SPI)
+| ADXL345 | ESP32-S3 |
+|---|---|
+| VCC | 3V3 |
+| GND | GND |
+| CS | GPIO10 |
+| SCLK | GPIO12 |
+| MOSI | GPIO11 |
+| MISO | GPIO13 |
+
+ADXL355 uses the same SPI pins (its registers are shifted, handled in `firmware/src/adxl.cpp`).
+Both run at 3.2 kHz, giving bearing defect frequencies up to ~1.5 kHz.
+
 ## Known V1 limits
 MPU-6050 is noisy and limited to about 1 kHz bursts over I2C, so bearing defect frequencies above 500 Hz are invisible. V2/V3 replace it with an ADXL355/ADXL345 over SPI.

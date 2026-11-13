@@ -1,26 +1,40 @@
-# VibeGuard V1
+# VibeGuard
 
-Edge vibration anomaly monitor. See `PROBLEM_STATEMENT.md`.
+Edge vibration anomaly monitor for small workshops, pump houses and farms.
+See `PROBLEM_STATEMENT.md` for goals and success metrics.
 
-## Quick start (no hardware needed)
+## Docker quick start (no hardware needed)
+```bash
+make test-v1     # V1 end-to-end suite: gateway + mosquitto + python & SIL nodes
+make test-v2     # V2 suite: NAS TinyML autoencoder + int8 model + E2E
+make up          # start gateway + broker, dashboard on http://localhost:18000
+make down
+```
+Reports land in `reports/`. See `docs/TESTING.md`.
+
+## Local quick start
 ```bash
 cd gateway
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-pytest -q                         # run tests
-uvicorn app:app --port 8000       # terminal 1: gateway + dashboard
-python simulator.py --fault-after 120   # terminal 2: fake machine, fault injected after 120 windows
+pytest -q
+uvicorn app:app --port 8000
+python simulator.py --fault-after 120    # in another terminal
 ```
-Open http://localhost:8000. The first 60 windows are baseline learning, then faults turn the status red.
 
 ## With hardware
 1. Wire per `hardware/WIRING_AND_BOM.md`.
 2. Edit `firmware/src/config.h` (WiFi, gateway IP).
-3. `cd firmware && pio run -t upload && pio device monitor`
-4. Optional MQTT: `MQTT_HOST=<broker> uvicorn app:app` (topic `vibeguard/<id>/features`).
+3. `cd firmware && pio run -t upload && pio device monitor`.
 
 ## Layout
-- `firmware/` PlatformIO ESP32-S3 code (MPU6050, FFT, features, HTTP/MQTT)
-- `gateway/` FastAPI, SQLite, anomaly detector, dashboard, simulator, tests
+- `firmware/` PlatformIO ESP32-S3 code; `vg_core/` portable DSP + int8 model (V2)
+- `gateway/` FastAPI, SQLite, detectors, dashboard, simulator, tests
+- `harness/` generic test harness: sources, scenarios, profiles, metrics
+- `config/` hardware + machine profiles
+- `sil/` software-in-the-loop firmware nodes (host-compiled)
+- `docker/` images, compose, mosquitto config
+- `tools/` dataset recording, NAS training, TinyML export (V2)
 - `hardware/` BOM, wiring, bench-test procedure
-- `plans/` V2, V3, V4 plans
+- `docs/` implementation plan and testing guide
+- `plans/` V2, V3, V4 specs

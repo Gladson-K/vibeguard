@@ -1,0 +1,93 @@
+version: "3.8"
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.20
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+      - "1883:1883"
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: docker/gateway.Dockerfile
+    environment:
+      VG_DB: /data/vibeguard.db
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+    volumes:
+      - vgdata:/data
+    ports:
+      - "${VG_GATEWAY_PORT:-18000}:8000"
+    depends_on:
+      - mosquitto
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/health')",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  test-v1:
+    build:
+      context: ..
+      dockerfile: docker/test.Dockerfile
+    profiles: ["v1", "ci"]
+    environment:
+      GATEWAY_URL: http://gateway:8000
+      MQTT_HOST: mosquitto
+      VG_SIL_BIN: /usr/local/bin/vg-sil-v1
+      VG_REPORT_DIR: /app/reports
+    depends_on:
+      - gateway
+      - mosquitto
+    volumes:
+      - ../reports:/app/reports
+    command: >
+      bash -c "docker/wait-for.sh http://gateway:8000/api/health 90 &&
+      docker/wait-for.sh mosquitto:1883 60 &&
+      pytest -q tests/v1 gateway/tests"
+
+  test-v2:
+    build:
+      context: ..
+      dockerfile: docker/test.Dockerfile
+    profiles: ["v2", "ci"]
+    environment:
+      GATEWAY_URL: http://gateway:8000
+      MQTT_HOST: mosquitto
+      VG_SIL_BIN: /usr/local/bin/vg-sil-v1
+      VG_SIL_BIN_V2: /usr/local/bin/vg-sil-v2
+      VG_SIL_BENCH: /usr/local/bin/vg-sil-bench
+      VG_REPORT_DIR: /app/reports
+    depends_on:
+      - gateway
+      - mosquitto
+    volumes:
+      - ../reports:/app/reports
+    command: >
+      bash -c "docker/wait-for.sh http://gateway:8000/api/health 90 &&
+      docker/wait-for.sh mosquitto:1883 60 &&
+      pytest -q tests/v2"
+
+  train-ml:
+    build:
+      context: ..
+      dockerfile: docker/test.Dockerfile
+    profiles: ["ml"]
+    command: ["python", "-m", "tools.train_autoencoder", "--out", "/app/models/tinyml"]
+
+  firmware-build:
+    build:
+      context: ..
+      dockerfile: docker/firmware.Dockerfile
+    profiles: ["firmware"]
+
+volumes:
+  vgdata:
