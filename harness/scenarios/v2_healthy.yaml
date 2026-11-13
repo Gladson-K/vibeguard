@@ -1,0 +1,13 @@
+name: v2_healthy
+version: v2
+device_id: sim-v2-healthy
+sensor: adxl345
+machine: fan_25hz
+seed: 11
+baseline_windows: 60
+fault_after: null
+total_windows: 300
+fault: null
+expect:
+  max_false_alarms: 0
+  max_latency_ms: 1000

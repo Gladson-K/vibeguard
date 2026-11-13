@@ -46,12 +46,21 @@ Firmware (ESP32-S3 + MPU-6050, 1 kHz), FastAPI gateway, Welford z-score detector
 dashboard, python node + SIL node, scenario E2E. Acceptance: recall ≥ 90%,
 0 false alarms, latency < 1 s, baseline ≤ 60 windows.
 
-### V2 — TinyML + better sensing
+### V2 — TinyML + better sensing (done)
 ADXL345/ADXL355 SPI profiles, upgraded spectral features (15 log bands, centroid,
 envelope), dataset tooling, **NAS-selected dense autoencoder**, int8 quantization +
 header-only C runtime (`firmware/src/vg_core`), SIL v2, gateway model-score detector.
 Acceptance: recall ≥ 90%, ≤ 1 false alarm/day, int8 AUC within 2% of float,
 inference < 20 ms, arena < 60 KB.
+
+NAS pipeline (`tools/`):
+1. `dataset.py` builds labelled feature windows from machine/sensor profiles.
+2. `nas.py` searches {latent, hidden, activation} configs, ranks by anomaly AUC
+   (tie-break fewer params).
+3. `train_autoencoder.py` trains the winner, calibrates a 99.5th-percentile
+   threshold, quantizes to int8 (`tinyml.py`) and emits `model_data.h`.
+4. `sil/v2_main.cpp` runs the int8 model in the SIL node; `sil/bench_main.cpp`
+   measures device-side latency.
 
 ### V3 — custom hardware, power, OTA (planned)
 See `plans/PLAN_V3.md`. Docker additions: OTA mock server, power-model test,
