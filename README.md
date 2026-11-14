@@ -7,6 +7,7 @@ See `PROBLEM_STATEMENT.md` for goals and success metrics.
 ```bash
 make test-v1     # V1 end-to-end suite: gateway + mosquitto + python & SIL nodes
 make test-v2     # V2 suite: NAS TinyML autoencoder + int8 model + E2E
+make test-v3     # V3 suite: power budget, signed OTA + rollback, prodtest
 make up          # start gateway + broker, dashboard on http://localhost:18000
 make down
 ```
@@ -23,18 +24,22 @@ python simulator.py --fault-after 120    # in another terminal
 ```
 
 ## With hardware
-1. Wire per `hardware/WIRING_AND_BOM.md`.
-2. Edit `firmware/src/config.h` (WiFi, gateway IP).
-3. `cd firmware && pio run -t upload && pio device monitor`.
+1. V1/V2 wiring: `hardware/WIRING_AND_BOM.md`.
+2. V3 board: `hardware/V3_DESIGN.md` + `hardware/v3/` (BOM, design rules, enclosure).
+3. Edit `firmware/src/config.h` (WiFi, gateway IP) and `firmware/src/v3/v3_config.h`
+   (OTA URL/key, sleep period, battery).
+4. `cd firmware && pio run -e esp32s3_v3 -t upload && pio device monitor`.
+5. Production test image: `pio run -e esp32s3_v3_prodtest -t upload`.
 
 ## Layout
-- `firmware/` PlatformIO ESP32-S3 code; `vg_core/` portable DSP + int8 model (V2)
+- `firmware/` PlatformIO ESP32-S3 code; `vg_core/` portable DSP + int8 model +
+  V3 OTA/power/prodtest/state policy
 - `gateway/` FastAPI, SQLite, detectors, dashboard, simulator, tests
 - `harness/` generic test harness: sources, scenarios, profiles, metrics
 - `config/` hardware + machine profiles
-- `sil/` software-in-the-loop firmware nodes (host-compiled)
-- `docker/` images, compose, mosquitto config
-- `tools/` dataset recording, NAS training, TinyML export (V2)
-- `hardware/` BOM, wiring, bench-test procedure
+- `sil/` software-in-the-loop firmware nodes (host-compiled, incl. V3)
+- `docker/` images, compose, mosquitto config, OTA mock server
+- `tools/` dataset recording, NAS training, TinyML export (V2), OTA signing (V3)
+- `hardware/` BOM, wiring, V3 design package + enclosure
 - `docs/` implementation plan and testing guide
 - `plans/` V2, V3, V4 specs

@@ -27,6 +27,23 @@ Optional heavy TensorFlow/TFLite comparison:
 docker-compose -f docker/docker-compose.yml --profile ml run --rm train-ml
 ```
 
+## V3 (hardware, power, signed OTA)
+```bash
+make test-v3
+```
+Starts the signed-OTA mock server and runs:
+- power-budget model (`vg-sil-v3_power`) — target and monotonicity checks;
+- OTA policy (`vg-sil-v3_ota`) — canonical parity, valid, tampered, wrong key,
+  downgrade, below-minimum, size mismatch, invalid signature;
+- production test (`vg-sil-v3_prodtest`) — PASS label and every failure reason;
+- deep-sleep state machine (`vg-sil-v3_state`);
+- OTA E2E — fetch `manifest.json` + `firmware.bin` from `ota-mock` and verify,
+  then reject a tampered download.
+
+The mock key and version are set in `docker/docker-compose.yml`; tests read the
+same `VG_OTA_KEY_HEX`. Physical power/thermal/ESD checks are hardware-in-the-loop
+(see `hardware/V3_DESIGN.md`).
+
 ## Adding hardware or a machine
 1. Add a sensor entry to `config/hardware.yaml` (fs, window, noise, transport).
 2. Add a machine entry to `config/machines.yaml` (rpm, bearing frequencies).

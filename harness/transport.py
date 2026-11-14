@@ -10,24 +10,33 @@ import requests
 class HttpTransport:
     def __init__(self, url: str):
         self.url = url.rstrip("/")
+        # Keep-alive avoids a fresh TCP handshake per frame; connection churn
+        # otherwise shows up as spurious latency spikes under CI load.
+        self.session = requests.Session()
+        self.session.headers.update({"Connection": "keep-alive"})
+
+    def close(self) -> None:
+        self.session.close()
 
     def send(self, frame: dict) -> tuple[dict, float]:
         t0 = time.perf_counter()
-        resp = requests.post(f"{self.url}/api/ingest", json=frame, timeout=10)
+        resp = self.session.post(f"{self.url}/api/ingest", json=frame, timeout=10)
         resp.raise_for_status()
         dt_ms = (time.perf_counter() - t0) * 1000.0
         return resp.json(), dt_ms
 
     def reset(self, device_id: str) -> None:
-        requests.post(f"{self.url}/api/reset/{device_id}", timeout=10)
+        self.session.post(f"{self.url}/api/reset/{device_id}", timeout=10)
 
     def history(self, device_id: str, limit: int = 500) -> list[dict]:
-        resp = requests.get(f"{self.url}/api/history/{device_id}", params={"limit": limit}, timeout=10)
+        resp = self.session.get(
+            f"{self.url}/api/history/{device_id}", params={"limit": limit}, timeout=10
+        )
         resp.raise_for_status()
         return resp.json()
 
     def devices(self) -> list[dict]:
-        resp = requests.get(f"{self.url}/api/devices", timeout=10)
+        resp = self.session.get(f"{self.url}/api/devices", timeout=10)
         resp.raise_for_status()
         return resp.json()
 

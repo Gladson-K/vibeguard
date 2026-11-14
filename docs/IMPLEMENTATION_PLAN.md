@@ -31,13 +31,15 @@ Generic abstractions (add hardware without touching tests):
 | gateway | `docker/gateway.Dockerfile` | FastAPI runtime |
 | test | `docker/test.Dockerfile` | pytest + harness + g++ SIL build |
 | firmware | `docker/firmware.Dockerfile` | PlatformIO compile gate (`pio run`) |
+| ota-mock | `docker/ota_mock.Dockerfile` | signed-OTA fixture server (V3) |
 | ml (optional) | `docker/ml.Dockerfile` | TensorFlow/TFLite heavy profile |
 
-Compose: `docker/docker-compose.yml` with profiles `v1`, `v2`, `ml`, `firmware`, `ci`.
-Gateway dashboard is published on `${VG_GATEWAY_PORT:-18000}`.
+Compose: `docker/docker-compose.yml` with profiles `v1`, `v2`, `v3`, `ml`,
+`firmware`, `ci`. Gateway dashboard is published on
+`${VG_GATEWAY_PORT:-18000}` and the OTA mock on `${VG_OTA_PORT:-18080}`.
 
-Make targets: `make test-v1`, `make test-v2`, `make test-all`, `make build-firmware`,
-`make up`, `make down`.
+Make targets: `make test-v1`, `make test-v2`, `make test-v3`, `make test-all`,
+`make build-firmware`, `make up`, `make down`.
 
 ## 3. Version roadmap
 
@@ -62,9 +64,28 @@ NAS pipeline (`tools/`):
 4. `sil/v2_main.cpp` runs the int8 model in the SIL node; `sil/bench_main.cpp`
    measures device-side latency.
 
-### V3 — custom hardware, power, OTA (planned)
-See `plans/PLAN_V3.md`. Docker additions: OTA mock server, power-model test,
-production-test jig emulation, HIL profile.
+### V3 — custom hardware, power, OTA (done)
+Design package: `hardware/V3_DESIGN.md`, `hardware/v3/bom.csv`,
+`hardware/v3/design_rules.md`, `hardware/v3/enclosure.scad`. Firmware:
+`firmware/src/main_v3.cpp` plus `firmware/src/v3/` (deep sleep, fast Wi-Fi,
+SoftAP provisioning, signed OTA + rollback, production test); portable policy in
+`firmware/src/vg_core/v3/`.
+
+Signed OTA uses HMAC-SHA256 over a canonical manifest
+(`vg-ota-v1\nversion\nmin_version\nsize\nsha256\n`) implemented in
+`vg_core/v3/ota_verify.cpp` and mirrored by `tools/ota_sign.py`. The firmware
+rejects bad signatures, hash/size mismatches, downgrades and too-old versions,
+and only confirms a new image after the sensor self-test passes.
+
+Docker additions: `ota-mock` service (`tools/ota_server.py`) plus host SIL nodes
+`v3_power`, `v3_ota`, `v3_prodtest`, `v3_state`. `make test-v3` covers the power
+budget, OTA policy and canonical parity, production-test labels, state-machine
+transitions, and an end-to-end fetch-and-verify against the mock server.
+
+Acceptance: default 45 s duty cycle ≈0.47 mA average (≈175 days on 2000 mAh,
+target <15 mA / ≥30 days), OTA accepts only signed newer images and rolls back
+on self-test failure, production jig reports a PASS/FAIL label, and no Docker
+test regressions in V1/V2.
 
 ### V4 — fleet, LoRa, continual learning, productization (planned)
 See `plans/PLAN_V4.md`. Docker additions: LoRa/fleet simulator, gateway v2 + Grafana,
