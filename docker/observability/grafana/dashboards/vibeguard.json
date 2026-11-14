@@ -1,0 +1,57 @@
+{
+  "title": "VibeGuard Fleet",
+  "uid": "vibeguard-fleet",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Devices",
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+      "targets": [{"expr": "vibeguard_devices", "refId": "A"}]
+    },
+    {
+      "type": "stat",
+      "title": "Windows",
+      "gridPos": {"h": 4, "w": 5, "x": 4, "y": 0},
+      "targets": [{"expr": "vibeguard_windows_total", "refId": "A"}]
+    },
+    {
+      "type": "stat",
+      "title": "Alerts",
+      "gridPos": {"h": 4, "w": 5, "x": 9, "y": 0},
+      "targets": [{"expr": "vibeguard_alerts_total", "refId": "A"}]
+    },
+    {
+      "type": "stat",
+      "title": "Rollout %",
+      "gridPos": {"h": 4, "w": 5, "x": 14, "y": 0},
+      "targets": [{"expr": "vibeguard_rollout_percent", "refId": "A"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Anomalies / hour",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+      "targets": [{"expr": "increase(vibeguard_anomalies_total[1h])", "refId": "A"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Battery (mV) by device",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+      "targets": [{"expr": "vibeguard_battery_mv", "legendFormat": "{{device_id}}", "refId": "A"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "RSSI (dBm) by device",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+      "targets": [{"expr": "vibeguard_rssi_dbm", "legendFormat": "{{device_id}}", "refId": "A"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Ingest errors",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+      "targets": [{"expr": "increase(vibeguard_ingest_errors_total[10m])", "refId": "A"}]
+    }
+  ]
+}

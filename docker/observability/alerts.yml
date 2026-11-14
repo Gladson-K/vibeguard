@@ -1,0 +1,31 @@
+groups:
+  - name: vibeguard
+    rules:
+      - alert: VibeguardGatewayDown
+        expr: up{job="vibeguard-gateway"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "VibeGuard gateway is down"
+      - alert: VibeguardLowBattery
+        expr: vibeguard_battery_mv < 3300
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node {{ $labels.device_id }} battery below 3.3 V"
+      - alert: VibeguardWeakLink
+        expr: vibeguard_rssi_dbm < -110
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node {{ $labels.device_id }} LoRa RSSI below -110 dBm"
+      - alert: VibeguardAnomalyRate
+        expr: increase(vibeguard_anomalies_total[1h]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 10 warning/anomaly windows in the last hour"
