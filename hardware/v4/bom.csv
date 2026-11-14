@@ -1,0 +1,16 @@
+item,ref,qty,description,package,unit_usd,notes
+1,U1,1,ESP32-S3-WROOM-1-N8R2,module,3.20,Wi-Fi/BLE MCU with 8 MB flash
+2,U2,1,SX1262 868/915 MHz LoRa transceiver,module,4.10,SPI; +22 dBm capable
+3,U3,1,ADXL345 3-axis accelerometer,LGA-14,2.30,ADXL355 drop-in for low-noise sites
+4,ANT1,1,868 MHz dipole antenna + U.FL pigtail,U.FL,1.80,Vertical polarization
+5,BT1,1,2000 mAh LiFePO4 18650 + holder,18650,3.50,Protected cell
+6,U4,1,TP4056/MP2662 charger + protection,module,0.80,USB-C input
+7,U5,1,3.3 V LDO 500 mA + 1.8 V LDO,module,0.60,ADXL355 needs 1.8 V
+8,J1,1,USB-C receptacle,16-pin,0.35,Flash/prodtest/charge
+9,D1-D3,3,ESD protection diodes,SOD-323,0.15,USB/antenna/button
+10,SW1,1,Tactile button,6 mm,0.10,Provisioning/reset
+11,LED1,1,Status LED + resistor,0603,0.05,Green
+12,R1-R4,4,Divider/pull-up resistors,0603,0.02,Battery + bus pulls
+13,PCB1,1,4-layer FR4 60x40 mm,PCB,1.20,RF keep-out + ground plane
+14,EN1,1,IP65 ABS enclosure 90x60x35,enclosure,2.80,M8 gland
+15,MISC,1,Headers/wire/screws/conformal coat,-,0.90,Assembly consumables

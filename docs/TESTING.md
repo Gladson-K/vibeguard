@@ -44,6 +44,28 @@ The mock key and version are set in `docker/docker-compose.yml`; tests read the
 same `VG_OTA_KEY_HEX`. Physical power/thermal/ESD checks are hardware-in-the-loop
 (see `hardware/V3_DESIGN.md`).
 
+## V4 (LoRa fleet, drift, diagnosis, staged rollout)
+```bash
+make test-v4
+```
+Builds the V4 SIL binaries and runs:
+- codec tests: 32-byte CRC frame, 40-byte HMAC frame, corruption/tamper,
+  C++/Python byte-for-byte parity;
+- rollout: FNV-1a buckets, 10/50/100 cohorts, SIL parity;
+- diagnosis: BPFO/BPFI/BSF/FTF geometry and rule classes, SIL parity;
+- RUL and PSI/KS drift, SIL parity;
+- gateway v2: signed LoRa ingest, CRC/key rejection, device registry, machine
+  metadata, alert hysteresis + recovery, maintenance suppression, ack,
+  staged rollout selection/advance/auto-rollback, drift/diagnosis/RUL endpoints,
+  Prometheus metrics and WebSocket events.
+
+`make test-all` now runs V1 + V2 + V3 + V4. Current totals: 22 + 14 + 35 + 45.
+
+Observability smoke test (optional):
+```bash
+make obs    # Prometheus http://localhost:19090, Grafana http://localhost:13000
+```
+
 ## Adding hardware or a machine
 1. Add a sensor entry to `config/hardware.yaml` (fs, window, noise, transport).
 2. Add a machine entry to `config/machines.yaml` (rpm, bearing frequencies).

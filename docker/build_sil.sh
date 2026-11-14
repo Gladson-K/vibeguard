@@ -5,7 +5,7 @@ set -euo pipefail
 cd /app
 shopt -s nullglob
 
-core=(firmware/src/vg_core/*.cpp firmware/src/vg_core/v3/*.cpp)
+core=(firmware/src/vg_core/*.cpp firmware/src/vg_core/v3/*.cpp firmware/src/vg_core/v4/*.cpp)
 
 for src in sil/*_main.cpp; do
   [ -e "$src" ] || continue

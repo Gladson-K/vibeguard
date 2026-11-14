@@ -1,3 +1,5 @@
+Status: implemented in `dev/version4` (portable core, SIL, gateway v2, firmware glue, hardware/security/ops docs; PlatformIO hardware gate pending).
+
 # VibeGuard V4: Fleet, long range, continual learning, productization (8-12 weeks)
 
 **Goal:** run 20-50 nodes across a site, adapt to changing machines safely, and make it a product someone could actually deploy.
