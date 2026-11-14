@@ -120,6 +120,51 @@ services:
       bash -c "docker/wait-for.sh http://ota-mock:8080/manifest.json 60 &&
       pytest -q tests/v3"
 
+  test-v4:
+    build:
+      context: ..
+      dockerfile: docker/test.Dockerfile
+    profiles: ["v4", "ci"]
+    environment:
+      VG_SIL_V4_CODEC: /usr/local/bin/vg-sil-v4_codec
+      VG_SIL_V4_ROLLOUT: /usr/local/bin/vg-sil-v4_rollout
+      VG_SIL_V4_DIAG: /usr/local/bin/vg-sil-v4_diag
+      VG_SIL_V4_RUL: /usr/local/bin/vg-sil-v4_rul
+      VG_SIL_V4_DRIFT: /usr/local/bin/vg-sil-v4_drift
+      VG_OTA_KEY_HEX: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+      VG_REPORT_DIR: /app/reports
+    volumes:
+      - ../reports:/app/reports
+    command: ["pytest", "-q", "tests/v4"]
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    profiles: ["obs"]
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - promdata:/prometheus
+    ports:
+      - "${VG_PROMETHEUS_PORT:-19090}:9090"
+    depends_on:
+      - gateway
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    profiles: ["obs"]
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_PASSWORD: "${VG_GRAFANA_PASSWORD:-vibeguard}"
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafanadata:/var/lib/grafana
+    ports:
+      - "${VG_GRAFANA_PORT:-13000}:3000"
+    depends_on:
+      - prometheus
+
   train-ml:
     build:
       context: ..
@@ -135,3 +180,5 @@ services:
 
 volumes:
   vgdata:
+  promdata:
+  grafanadata:

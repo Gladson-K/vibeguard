@@ -32,13 +32,14 @@ Generic abstractions (add hardware without touching tests):
 | test | `docker/test.Dockerfile` | pytest + harness + g++ SIL build |
 | firmware | `docker/firmware.Dockerfile` | PlatformIO compile gate (`pio run`) |
 | ota-mock | `docker/ota_mock.Dockerfile` | signed-OTA fixture server (V3) |
+| obs (optional) | `prom/prometheus`, `grafana/grafana` | fleet metrics + dashboards (V4) |
 | ml (optional) | `docker/ml.Dockerfile` | TensorFlow/TFLite heavy profile |
 
-Compose: `docker/docker-compose.yml` with profiles `v1`, `v2`, `v3`, `ml`,
-`firmware`, `ci`. Gateway dashboard is published on
+Compose: `docker/docker-compose.yml` with profiles `v1`, `v2`, `v3`, `v4`, `ml`,
+`firmware`, `ci`, `obs`. Gateway dashboard is published on
 `${VG_GATEWAY_PORT:-18000}` and the OTA mock on `${VG_OTA_PORT:-18080}`.
 
-Make targets: `make test-v1`, `make test-v2`, `make test-v3`, `make test-all`,
+Make targets: `make test-v1` … `make test-v4`, `make test-all`, `make obs`,
 `make build-firmware`, `make up`, `make down`.
 
 ## 3. Version roadmap
@@ -87,9 +88,30 @@ target <15 mA / ≥30 days), OTA accepts only signed newer images and rolls back
 on self-test failure, production jig reports a PASS/FAIL label, and no Docker
 test regressions in V1/V2.
 
-### V4 — fleet, LoRa, continual learning, productization (planned)
-See `plans/PLAN_V4.md`. Docker additions: LoRa/fleet simulator, gateway v2 + Grafana,
-drift/staged-rollout tests, mTLS/security tests, soak/load tests.
+### V4 — fleet, LoRa, continual learning, productization (implemented)
+See `plans/PLAN_V4.md`. Portable core in `firmware/src/vg_core/v4/`:
+32-byte compact frame + CRC16 and 40-byte HMAC-signed frame, deterministic
+staged rollout (FNV-1a bucket, 10/50/100), PSI + two-sample KS drift, bearing
+frequencies plus rule-based diagnosis, and linear-trend RUL. Host SIL nodes
+`v4_codec`, `v4_rollout`, `v4_diag`, `v4_rul`, `v4_drift` mirror the Python
+modules in `gateway/`.
+
+Gateway v2: device registry with per-device keys and machine metadata, signed
+LoRa ingest with CRC/HMAC checks, maintenance suppression, warning/critical/
+recovery alerts with hysteresis, Telegram/email hooks, REST + SSE/WebSocket,
+Prometheus metrics, Grafana assets, drift/diagnosis/RUL endpoints and staged
+model rollout with alarm-rate auto-rollback.
+
+Firmware: `firmware/src/main_v4.cpp`, `firmware/src/v4/` (SX1262 driver, LoRa +
+ESP-NOW fallback, NVS key/sequence security, on-device drift shadow), PlatformIO
+env `esp32s3_v4`. Hardware package: `hardware/V4_DESIGN.md`, `hardware/v4/bom.csv`.
+Security/ops/productization: `docs/V4_SECURITY.md`, `docs/INSTALL_V4.md`,
+`docs/OPERATIONS_V4.md`, `docs/PRODUCTIZATION.md`.
+
+Verification: `make test-v4` covers codec rotation/tamper, rollout cohorts,
+diagnosis rules, RUL, drift, signed ingest, alert lifecycle, maintenance,
+rollout advance/rollback, metrics and WebSocket. `make test-all` includes V1–V4.
+The PlatformIO compile gate remains hardware-side.
 
 ## 4. Acceptance matrix
 
