@@ -76,6 +76,50 @@ services:
       docker/wait-for.sh mosquitto:1883 60 &&
       pytest -q tests/v2"
 
+  ota-mock:
+    build:
+      context: ..
+      dockerfile: docker/ota_mock.Dockerfile
+    profiles: ["v3", "ci"]
+    environment:
+      VG_OTA_KEY_HEX: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+      VG_OTA_VERSION: "4"
+      VG_OTA_MIN_VERSION: "3"
+    ports:
+      - "${VG_OTA_PORT:-18080}:8080"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request;urllib.request.urlopen('http://localhost:8080/manifest.json')",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  test-v3:
+    build:
+      context: ..
+      dockerfile: docker/test.Dockerfile
+    profiles: ["v3", "ci"]
+    environment:
+      VG_SIL_POWER: /usr/local/bin/vg-sil-v3_power
+      VG_SIL_OTA: /usr/local/bin/vg-sil-v3_ota
+      VG_SIL_PRODTEST: /usr/local/bin/vg-sil-v3_prodtest
+      VG_SIL_STATE: /usr/local/bin/vg-sil-v3_state
+      OTA_MOCK_URL: http://ota-mock:8080
+      VG_OTA_KEY_HEX: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+      VG_REPORT_DIR: /app/reports
+    depends_on:
+      - ota-mock
+    volumes:
+      - ../reports:/app/reports
+    command: >
+      bash -c "docker/wait-for.sh http://ota-mock:8080/manifest.json 60 &&
+      pytest -q tests/v3"
+
   train-ml:
     build:
       context: ..

@@ -1,5 +1,11 @@
 # VibeGuard V3: Custom hardware, power and OTA (6-8 weeks)
 
+Status: **implemented** — design package in `hardware/V3_DESIGN.md` (BOM, design
+rules, enclosure), firmware in `firmware/src/main_v3.cpp` + `firmware/src/v3/`,
+portable policy in `firmware/src/vg_core/v3/`, verified by `make test-v3`
+(power budget, signed OTA + rollback policy, prodtest, state machine, OTA E2E).
+Physical PPK2/thermal/ESD/tap tests remain hardware-in-the-loop.
+
 **Goal:** turn the breadboard prototype into a robust, manufacturable node.
 
 ## Skills you build
